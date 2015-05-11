@@ -1,0 +1,13 @@
+name = Facebook comments
+description = Provides facebook interaction.
+core = 7.x
+
+configure = admin/config/fbcomments-configuration
+
+; Information added by drupal.org packaging script on 2012-09-24
+version = "7.x-1.4"
+core = "7.x"
+project = "Solange"
+package =  "Solange"
+datestamp = "1348497279"
+

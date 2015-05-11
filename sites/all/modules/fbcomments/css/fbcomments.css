@@ -1,0 +1,81 @@
+#seccion-la-artista{
+    width: 100%;
+    float: left;
+    min-height: 590px;
+    padding-left: 33px;
+}
+
+.seccion-la-artista-izquierda{
+    width: 100%;
+    max-width: 450px;
+    float: left;
+    background: url("../img/izq.png") no-repeat;
+    background-size: 100%;
+    height: 535px;
+}
+
+.seccion-la-artista-centro{
+    width: 100%;
+    max-width: 290px;
+    float: left;
+    background: url("../img/mid.png") no-repeat;
+    background-size: 100%;
+    height: 535px;
+}
+
+.seccion-la-artista-derecha{
+    width: 100%;
+    max-width: 475px;
+    float: left;
+    background: url("../img/der.png") no-repeat;
+    background-size: 100%;
+    height: 535px;
+}
+
+#seccion-la-artista-title{
+    background-color: #e7e7e8;
+    font-family: DARTANGNONITC;
+    font-size: 65px;
+    margin: 20px auto;
+    padding: 15px;
+    text-align: center;
+    width: 100%;
+}
+
+.area-vistas-la-artista{
+    width: 0;
+    display: none;
+    border: 2px solid #CBE4F7;
+    overflow: auto;
+    height: 0;
+    float: left;
+}
+
+
+.la-artista-navegacion{
+    margin-top: 200px;
+    float: left;
+    width: 100%;
+    padding: 0;
+}
+
+.la-artista-navegacion li{
+    list-style: none;
+    text-align: center;
+}
+
+.la-artista-navegacion li a{
+    color: #fff;
+    font-size: 16px;
+    font-family: GOTHIC;
+}
+
+.solange-cargando{
+    width: 128px;
+    height: 128px;
+    background: url("../img/loading.gif");
+    float: left;
+    margin-top: 10%;
+    margin-left: 40%;
+
+}

@@ -1,0 +1,20 @@
+; $Id$ 
+name = solange
+description = Solange Arruda | Web Site
+version = 7.36
+core = 7.x 
+
+stylesheets[screen][] = css/bootstrap.min.css
+stylesheets[screen][] = css/solange.css
+stylesheets[screen][] = css/style.css
+
+scripts[] = js/solange.js
+scripts[] = js/scripts.js
+
+regions[testimony] = Testimony
+regions[options-top] = Options Top
+regions[main-menu] = Main Menu
+regions[content] = Content
+regions[footer] = Footer
+regions[contact] = Contact Form
+regions[fmsg] = Footer Message

@@ -1,0 +1,310 @@
+<?php
+
+
+
+/**
+ *  Implements hook_init().
+ */
+function fbcomments_init()
+    /* @todo eliminar esta funcion, pues solo existe para probar. */
+{
+
+    /*$url = 'https://graph.facebook.com/' . variable_get('aplication_page_id', '1668773016684363') . '/feed?access_token=' . variable_get('aplication_page_security_token', 'CAACEdEose0cBACnCqKQ6JaJJxMn9ISMDFYSA7cPWrm5VqHvtITmUStW7SNqoXJ1qkxkHbse4czf5DhoMG1L9zGizhbmMNkwo035gas3AyJ3ggTslvWW77WPDldf2h0SPUOMjvDFZClD8FuCQ4gWkdu8fthRulh8dd3F7kHsnsRZAWqZBwPsrGrLHhGwLQZBULoFdI6zezVA23QkFmeOV');
+
+    $url = 'http://192.168.13.128/testing/json.txt';
+
+    $content = file_get_contents($url);
+    $elements = json_decode($content);
+
+    $types = variable_get('aplication_types', array('Comments' => 'Comments', 'Post' => 'Post'));
+
+
+    if(isset($types) && gettype($types) != 'array')
+        $types = unserialize($types);
+
+
+    if (isset($types['Comments'])) {
+
+        foreach ($elements->data as $k => $v) {
+            if (isset($v->comments)) {
+                foreach ($v->comments as $t) {
+                    foreach ($t as $c) {
+                        if (isset($c->id)) {
+
+                            save_testimony($c->id, $c->from->name, $c->message, 'http://graph.facebook.com/' . $c->from->id . '/picture?type=normal');
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    if (isset($types['Post'])) {
+        foreach ($elements->data as $k => $v) {
+            if (isset($v->message)) { // Asegura que haya mensaje
+                if(isset($v->from->id)) // Se asegura que el tipo sea una persona o al menos un perfil personal.
+                    save_testimony($v->id, $v->from->name, $v->message, 'http://graph.facebook.com/' . $v->from->id . '/picture?type=normal');
+
+            }
+        }
+    }
+*/
+
+}
+
+
+/**
+ *  Implements hook_permission().
+ */
+/*function fbcomments_permission()
+{
+    return array('administer fb variables');
+}
+*/
+
+/**
+ *  Implements hook_menu().
+ */
+function fbcomments_menu()
+{
+    $items = array();
+
+    $items['admin/config/fbcomments-configuration'] = array(
+        'title' => 'Configuration',
+        'page callback' => 'drupal_get_form',
+        'access arguments' => array('administer fb variables'),
+        'page arguments' => array('formulario_configuracion_datos_facebook'),
+        'type' => MENU_CALLBACK,
+
+    );
+
+    $items['return_html_a_artis_js'] = array(
+        'page callback' => 'return_html_a_artis_js',
+        'access arguments' => array('access content'),
+        'type' => MENU_CALLBACK,
+
+    );
+
+
+    return $items;
+}
+
+
+function return_html_a_artis_js()
+{
+    extract($_POST);
+    $values = explode('/', $value);
+    if ($values[0] == 'node') {
+        $node = node_load($values[1]);
+        $node_view = node_view($node);
+        $rendered_node = drupal_render($node_view);
+        echo $rendered_node;
+    }
+
+    if ($values[0] == 'view') {
+        $args = array();
+        $view = views_get_view($values[1]);
+        echo $view->execute_display('default', $args);
+    }
+
+}
+
+
+function formulario_configuracion_datos_facebook()
+{
+
+    $form = array();
+
+    $form['page_id'] = array(
+        '#type' => 'textfield',
+        '#title' => 'Page Id',
+        '#required' => TRUE,
+        '#description' => t('Type the page id from facebook.'),
+        '#default_value' => variable_get('aplication_page_id', '1668773016684363')
+    );
+
+    $form['token'] = array(
+        '#type' => 'textarea',
+        '#title' => 'Security token',
+        '#required' => TRUE,
+        '#description' => t('Type the page id from facebook.'),
+        '#default_value' => variable_get('aplication_page_security_token', 'CAACEdEose0cBACnCqKQ6JaJJxMn9ISMDFYSA7cPWrm5VqHvtITmUStW7SNqoXJ1qkxkHbse4czf5DhoMG1L9zGizhbmMNkwo035gas3AyJ3ggTslvWW77WPDldf2h0SPUOMjvDFZClD8FuCQ4gWkdu8fthRulh8dd3F7kHsnsRZAWqZBwPsrGrLHhGwLQZBULoFdI6zezVA23QkFmeOV')
+
+    );
+
+
+    $st = variable_get('aplication_types', array('Comments' => 'Comments', 'Post' => 'Post'));
+
+
+    $form['type'] = array(
+        '#type' => 'select',
+        '#title' => 'Items to store',
+        '#required' => TRUE,
+        '#multiple' => TRUE,
+        '#options' => array('Comments' => 'Comments', 'Post' => 'Post'),
+        '#description' => t('Select items to store.'),
+        '#default_value' => unserialize($st)
+
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Save'),
+
+    );
+
+
+    return $form;
+}
+
+function formulario_configuracion_datos_facebook_submit($form, $form_state)
+{
+
+
+    $st = $form_state['values']['type'];
+
+    variable_set('aplication_page_id', $form_state['values']['page_id']);
+    variable_set('aplication_page_security_token', $form_state['values']['token']);
+    variable_set('aplication_types', serialize($st));
+
+    drupal_set_message('Configuration saved', 'status');
+}
+
+/**
+ *  Implements hook_cron().
+ */
+function fbcomments_cron()
+{
+
+    $url = 'https://graph.facebook.com/' . variable_get('aplication_page_id', '1668773016684363') . '/feed?access_token=' . variable_get('aplication_page_security_token', 'CAACEdEose0cBACnCqKQ6JaJJxMn9ISMDFYSA7cPWrm5VqHvtITmUStW7SNqoXJ1qkxkHbse4czf5DhoMG1L9zGizhbmMNkwo035gas3AyJ3ggTslvWW77WPDldf2h0SPUOMjvDFZClD8FuCQ4gWkdu8fthRulh8dd3F7kHsnsRZAWqZBwPsrGrLHhGwLQZBULoFdI6zezVA23QkFmeOV');
+
+    $content = file_get_contents($url);
+    $elements = json_decode($content);
+
+    $types = variable_get('aplication_types', array('Comments' => 'Comments', 'Post' => 'Post'));
+
+
+    if (isset($types) && gettype($types) != 'array')
+        $types = unserialize($types);
+
+
+    /* comentarios */
+    if (isset($types['Comments'])) {
+
+        foreach ($elements->data as $k => $v) {
+            if (isset($v->comments)) {
+                foreach ($v->comments as $t) {
+                    foreach ($t as $c) {
+                        if (isset($c->id)) {
+
+                            save_testimony($c->id, $c->from->name, $c->message, 'http://graph.facebook.com/' . $c->from->id . '/picture?type=normal');
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    /* Post */
+    if (isset($types['Post'])) {
+        foreach ($elements->data as $k => $v) {
+            if (isset($v->message)) { // Asegura que haya mensaje
+                if (isset($v->from->id)) // Se asegura que el tipo sea una persona o al menos un perfil personal.
+                    save_testimony($v->id, $v->from->name, $v->message, 'http://graph.facebook.com/' . $v->from->id . '/picture?type=normal');
+
+            }
+        }
+    }
+
+}
+
+
+function save_testimony($title, $name, $body, $imagen_text)
+{
+
+    $query = new EntityFieldQuery();
+
+    $entities = $query->entityCondition('entity_type', 'node')
+        ->propertyCondition('type', 'testimony')
+        ->propertyCondition('title', $title)
+        ->propertyCondition('status', 1)
+        ->range(0, 1)
+        ->execute();
+
+
+    if (count($entities) == 0) {
+        global $user;
+        $node = new stdClass();
+        $node->type = "testimony";
+        $node->status = 1;
+        $node->title = _fbcomments_clean($title);
+        $node->language = LANGUAGE_NONE;
+        $node->uid = $user->uid;
+        $node->created = time();
+        $node->timestamp = $node->created;
+        $node->changed = $node->created;
+        $node->field_name[$node->language][0]['value'] = _fbcomments_clean($name);
+        $node->body[$node->language][0]['value'] = _fbcomments_clean($body);
+        $node->field_imagen[$node->language][0]['value'] = $imagen_text;
+
+
+        node_save($node);
+    }
+
+}
+
+
+/**
+ *  Implements hook_block_info().
+ */
+function fbcomments_block_info()
+{
+    $blocks['la-artista'] = array(
+        'info' => t('A artista'),
+    );
+
+
+    return $blocks;
+}
+
+/**
+ *  Implements hook_block_view().
+ */
+function fbcomments_block_view($delta = '')
+{
+    $block = array();
+    if ($delta == 'la-artista') {
+        $block['content'] = generate_block_the_artist();
+    }
+
+    return $block;
+}
+
+function generate_block_the_artist()
+{
+    $path = drupal_get_path('module', 'fbcomments') . '/';
+    drupal_add_js($path . 'js/solange.js');
+    drupal_add_css($path . 'css/fbcomments.css');
+
+
+    $out = '<a name="artista"></a><div id="seccion-la-artista-title"><div class="session-name">' . t('The Artist') . '</div></div>';
+    $out .= '<div id="seccion-la-artista">';
+    $out .= '<div class="seccion-la-artista-izquierda"></div>';
+    $out .= '<div class="seccion-la-artista-centro">' . theme('links', array('links' => menu_navigation_links('menu-the-artist'), 'attributes' => array('class' => array('la-artista-navegacion')))). '</div>';
+    $out .= '<div class="area-vistas-la-artista"></div>';
+    $out .= '<div class="seccion-la-artista-derecha"></div>';
+
+    $out . '</div><div class="clear"></div>';
+
+    return $out;
+
+}
+
+
+function _fbcomments_clean($string)
+{
+    return utf8_encode($string); // Removes special chars.
+}
